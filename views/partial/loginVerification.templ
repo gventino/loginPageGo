@@ -1,0 +1,10 @@
+package partial
+
+templ LoginVerification(succeeded bool) {
+    if succeeded {
+        <h1 class="mt-10 text-center text-3xl font-bold green"> Logged in! </h1>
+    }
+    else {
+        <h1 class="mt-10 text-center text-3xl font-bold red"> Login incorrect! </h1>
+    }
+}
