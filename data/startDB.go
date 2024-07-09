@@ -16,7 +16,7 @@ func StartDB() {
 
 	// Creating table:
 	statement, err := db.Prepare(`
-	CREATE TABLE users IF NOT EXISTS(
+	CREATE TABLE users (
 		username TEXT PRIMARY KEY,
 		email TEXT UNIQUE,
 		password TEXT,
@@ -28,6 +28,7 @@ func StartDB() {
 	}
 	statement.Exec()
 
+	defer statement.Close()
 	// Closing db:
 	defer db.Close()
 }

@@ -1,0 +1,10 @@
+package partial
+
+templ Verification(name string, succeeded bool) {
+    if succeeded {
+        <h1 class="mt-10 text-center text-3xl font-bold green"> {name} ok</h1>
+    }
+    else {
+        <h1 class="mt-10 text-center text-3xl font-bold red"> {name} not ok </h1>
+    }
+}

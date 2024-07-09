@@ -3,32 +3,41 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"main/models"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type User = models.User
-
-func InsertUser(username, email, phone, password string) {
+func InsertUser(username, email, phone, password string) bool {
 	// Open db:
 	db, err := sql.Open("sqlite3", "users.db")
 	if err != nil {
 		fmt.Println(err)
 	}
+	defer db.Close()
 
-	// Insert user into db:
-	statement, err := db.Prepare(`
-	INSERT INTO users (username, email, phone, password)
-	VALUES (?, ?, ?, ?);
-	`)
+	rows, err := db.Query("SELECT username FROM users WHERE username=?", username)
 	if err != nil {
 		fmt.Println(err)
 	}
-	statement.Exec(username, email, phone, password)
+	defer rows.Close()
 
-	// Close db:
-	defer db.Close()
+	// If user not registered yet
+	if !rows.Next() {
+		// Insert user into db:
+		statement, err := db.Prepare(`
+		INSERT INTO users (username, email, phone, password)
+		VALUES (?, ?, ?, ?);
+		`)
+		if err != nil {
+			fmt.Println(err)
+		}
+		statement.Exec(username, email, phone, password)
+
+		defer statement.Close()
+		return true
+	}
+
+	return false
 }
 
 func VerifyLogin(username, password string) bool {
@@ -37,18 +46,28 @@ func VerifyLogin(username, password string) bool {
 	if err != nil {
 		fmt.Println(err)
 	}
-
-	rows, _ := db.Query("SELECT username, password FROM users")
-	var temp User
-	for rows.Next() {
-		rows.Scan(&temp.Username, &temp.Password)
-		if username == temp.Username && password == temp.Password {
-			return true
-		}
-	}
-
-	// Close db:
 	defer db.Close()
 
-	return false
+	rows, err := db.Query("SELECT username, password FROM users WHERE username=? AND password=?", username, password)
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer rows.Close()
+
+	return rows.Next()
+}
+
+func ResetDB() {
+	db, err := sql.Open("sqlite3", "users.db")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer db.Close()
+
+	statement, err := db.Prepare("DELETE FROM users")
+	if err != nil {
+		fmt.Println(err)
+	}
+	statement.Exec()
+	defer statement.Close()
 }
