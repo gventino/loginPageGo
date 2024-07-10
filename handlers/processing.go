@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"main/data"
 	"net/http"
@@ -11,13 +12,12 @@ func LoginProcessing(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		username := r.FormValue("username")
 		password := r.FormValue("password")
-		value := data.VerifyLogin(username, password)
+		encodedPassword := sha256.Sum256([]byte(password))
+		value := data.VerifyLogin(username, string(encodedPassword[:]))
 		if value {
 			fmt.Println("login aceito")
-			http.Redirect(w, r, "/login/succeeded", http.StatusSeeOther)
 		} else {
 			fmt.Println("login negado")
-			http.Redirect(w, r, "/login/notSucceeded", http.StatusSeeOther)
 		}
 		fmt.Fprint(w, "ok")
 	}
@@ -32,13 +32,12 @@ func RegisterProcessing(w http.ResponseWriter, r *http.Request) {
 		phone := r.FormValue("phone")
 		email := r.FormValue("e-mail")
 
-		value := data.InsertUser(username, email, phone, password)
+		encodedPassword := sha256.Sum256([]byte(password))
+		value := data.InsertUser(username, email, phone, string(string(encodedPassword[:])))
 
 		if value {
-			http.Redirect(w, r, "/register/succeeded", http.StatusSeeOther)
 			fmt.Println("registrando")
 		} else {
-			http.Redirect(w, r, "/register/notSucceeded", http.StatusSeeOther)
 			fmt.Println("ja registrado")
 		}
 	}
