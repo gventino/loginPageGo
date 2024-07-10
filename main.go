@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-
 	login := layout.Base(views.Login())
 
 	http.Handle("/", templ.Handler(login))
